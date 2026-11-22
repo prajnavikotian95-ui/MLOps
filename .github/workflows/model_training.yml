@@ -31,10 +31,11 @@ jobs:
 
       - name: Run data preparation and verify splits
         run: |
-          cat src/prepare_data.py
-          echo "--- Running prepare_data.py ---"
+          echo "=== prepare_data.py content ==="
+          nl -ba src/prepare_data.py
+          echo "=== Running prepare_data.py ==="
           python -u src/prepare_data.py
-          echo "--- Checking data/processed ---"
+          echo "=== Checking data/processed ==="
           ls -la data/processed/
 
       - name: Train, tune, evaluate, and log model
