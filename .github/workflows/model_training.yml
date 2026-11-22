@@ -31,13 +31,14 @@ jobs:
 
       - name: Run data preparation and verify splits
         run: |
-          ls -la
-          ls -la data/ || true
-          python src/prepare_data.py
-          ls -lh data/processed/
+          cat src/prepare_data.py
+          echo "--- Running prepare_data.py ---"
+          python -u src/prepare_data.py
+          echo "--- Checking data/processed ---"
+          ls -la data/processed/
 
       - name: Train, tune, evaluate, and log model
-        run: python src/train_model.py
+        run: python -u src/train_model.py
 
       - name: Commit best model to repository
         run: |
