@@ -36,7 +36,8 @@ jobs:
           name: tourism-train-test-splits
           path: data/processed
 
-      - name: Ensure train and test splits exist
+      - name: - name: Generate train and test splits
+        run: python src/prepare_data.py
         run: |
           if [ ! -f "data/processed/train.csv" ] || [ ! -f "data/processed/test.csv" ]; then
             python src/prepare_data.py
