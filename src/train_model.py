@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import joblib
 import mlflow
@@ -13,7 +14,7 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
-from sklearn.model_selection import StratifiedKFold, GridSearchCV
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
@@ -30,9 +31,7 @@ def load_splits(processed_dir: str = "data/processed") -> tuple[pd.DataFrame, pd
             "Run src/prepare_data.py or download the workflow artifact first."
         )
 
-    train_df = pd.read_csv(train_path)
-    test_df = pd.read_csv(test_path)
-    return train_df, test_df
+    return pd.read_csv(train_path), pd.read_csv(test_path)
 
 
 def build_preprocessor(X: pd.DataFrame) -> ColumnTransformer:
@@ -66,6 +65,8 @@ def train_and_evaluate(
     model_output_path: str = "models/best_model.joblib",
     experiment_name: str = "Visit_With_Us_Wellness_Tourism",
 ) -> None:
+    os.environ.setdefault("MLFLOW_ALLOW_FILE_STORE", "true")
+
     train_df, test_df = load_splits(processed_dir)
 
     target_col = "ProdTaken"
@@ -131,16 +132,18 @@ def train_and_evaluate(
             "test_roc_auc": float(roc_auc_score(y_test, y_proba)),
         }
 
-        # Log tuned parameters and evaluation metrics to MLflow
         mlflow.log_params(best_params)
         mlflow.log_metrics(metrics)
 
-        # Save best model locally for committing to the repository
         out_file = Path(model_output_path)
         out_file.parent.mkdir(parents=True, exist_ok=True)
         joblib.dump(best_model, out_file)
 
-        mlflow.sklearn.log_model(best_model, artifact_path="model")
+        mlflow.sklearn.log_model(
+            best_model,
+            name="model",
+            skops_trusted_types=["numpy.dtype", "sklearn.tree._tree.Tree"],
+        )
         mlflow.log_artifact(str(out_file), artifact_path="serialized_model")
 
         print("=== BEST PARAMETERS ===")
