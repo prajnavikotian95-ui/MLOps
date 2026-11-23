@@ -31,14 +31,12 @@ jobs:
 
       - name: Run data preparation and verify splits
         run: |
-          echo "=== prepare_data.py content ==="
-          nl -ba src/prepare_data.py
-          echo "=== Running prepare_data.py ==="
           python -u src/prepare_data.py
-          echo "=== Checking data/processed ==="
-          ls -la data/processed/
+          ls -lh data/processed/
 
       - name: Train, tune, evaluate, and log model
+        env:
+          MLFLOW_ALLOW_FILE_STORE: "true"
         run: python -u src/train_model.py
 
       - name: Commit best model to repository
